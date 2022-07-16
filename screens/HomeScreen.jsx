@@ -1,52 +1,27 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {Button, Text, View, StyleSheet, FlatList, Image, TouchableOpacity} from 'react-native';
 import {EvilIcons} from '@expo/vector-icons';
 import {Platform as Plateform} from "react-native-web";
 import {AntDesign} from '@expo/vector-icons';
+import axios from 'axios';
+import {formatDistanceToNowStrict} from "date-fns";
 
 export default function HomeScreen({navigation}) {
-    const DATA = [
-        {
-            id: '1',
-            title: 'First Item',
-        },
-        {
-            id: '2',
-            title: 'Second Item',
-        },
-        {
-            id: '3',
-            title: 'Third Item',
-        },
-        {
-            id: '4',
-            title: 'Fourth Item',
-        },
-        {
-            id: '5',
-            title: 'Fifth Item',
-        },
-        {
-            id: '6',
-            title: 'Sixth Item',
-        },
-        {
-            id: '7',
-            title: 'Seventh Item',
-        },
-        {
-            id: '8',
-            title: 'Eight Item',
-        },
-        {
-            id: '9',
-            title: 'Ninth Item',
-        }, {
-            id: '10',
-            title: 'Tenth Item',
-        },
-    ];
+   const[data, setData] = useState([]);
 
+   useEffect(()=> {
+       getAllTweets();
+   }, [])
+
+    function getAllTweets(){
+       axios.get('https://graou-backend.eu-1.sharedwithexpose.com/api/tweets')
+           .then(response => {
+               setData(response.data);
+           })
+           .catch(error => {
+               console.log(error)
+           });
+    }
     function gotoProfile() {
         navigation.navigate('Profile Screen')
     }
@@ -59,22 +34,21 @@ export default function HomeScreen({navigation}) {
         navigation.navigate('New Graou')
     }
 
-    const renderItem = ({item}) => (
+    const renderItem = ({item: tweet}) => (
         <View style={styles.graouContainer}>
             <TouchableOpacity onPress={() => gotoProfile()}>
-                <Image style={styles.avatar} source={{uri: 'https://reactnative.dev/img/tiny_logo.png'}}></Image>
+                <Image style={styles.avatar} source={{uri: tweet.user.avatar}}></Image>
             </TouchableOpacity>
             <View style={{flex: 1}}>
                 <TouchableOpacity style={styles.flexRow} onPress={() => gotoSingleGraou()}>
-                    <Text numberOfLines={1} style={styles.graouName}>{item.title}</Text>
-                    <Text numberOfLines={1} style={styles.graouHandle}>@mattLab</Text>
+                    <Text numberOfLines={1} style={styles.graouName}>{tweet.user.name}</Text>
+                    <Text numberOfLines={1} style={styles.graouHandle}>@{tweet.user.username}</Text>
                     <Text>&middot;</Text>
-                    <Text numberOfLines={1} style={styles.graouHandle}>9m</Text>
+                    <Text numberOfLines={1} style={styles.graouHandle}>{formatDistanceToNowStrict(new Date(tweet.created_at))}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.graouContentContainer} onPress={() => gotoSingleGraou()}>
                     <Text style={styles.graouContent}>
-                        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Atque ea nihil praesentium quia unde?
-                        Obcaecati provident quas quis sint voluptatibus.
+                        {tweet.body}
                     </Text>
                 </TouchableOpacity>
                 <View style={styles.graouEngagment}>
@@ -101,7 +75,7 @@ export default function HomeScreen({navigation}) {
     return (
         <View style={styles.container}>
             <FlatList
-                data={DATA}
+                data={data}
                 renderItem={renderItem}
                 keyExtractor={item => item.id}
                 ItemSeparatorComponent={() => <View style={styles.graouSeparator}></View>}
