@@ -3,7 +3,7 @@ import {Text, View, StyleSheet, FlatList, Image, TouchableOpacity, ActivityIndic
 import {EvilIcons} from '@expo/vector-icons';
 import {Platform as Plateform} from "react-native-web";
 import {AntDesign} from '@expo/vector-icons';
-import axios from 'axios';
+import axiosConfig from "../helpers/axiosConfig"
 import {formatDistanceToNowStrict} from "date-fns";
 
 export default function HomeScreen({navigation}) {
@@ -18,7 +18,7 @@ export default function HomeScreen({navigation}) {
     }, [page])
 
     function getAllTweets() {
-        axios.get(`https://graou-backend.eu-1.sharedwithexpose.com/api/tweets?page=${page}`)
+        axiosConfig.get(`/tweets?page=${page}`)
             .then(response => {
                 if (page === 1) {
                     setData(response.data.data);
@@ -28,7 +28,7 @@ export default function HomeScreen({navigation}) {
 
                 if (!response.data.next_page_url) {
                     setIsAtEndOfScrolling(true);
-                }else {
+                } else {
                     setIsAtEndOfScrolling(false);
                 }
 
@@ -57,8 +57,10 @@ export default function HomeScreen({navigation}) {
         navigation.navigate('Profile Screen');
     }
 
-    function gotoSingleGraou() {
-        navigation.navigate('Graou Screen');
+    function gotoSingleGraou(tweetId) {
+        navigation.navigate('Graou Screen', {
+            tweetId: tweetId
+        });
     }
 
     function gotoNewGraou() {
@@ -71,14 +73,14 @@ export default function HomeScreen({navigation}) {
                 <Image style={styles.avatar} source={{uri: tweet.user.avatar}}></Image>
             </TouchableOpacity>
             <View style={{flex: 1}}>
-                <TouchableOpacity style={styles.flexRow} onPress={() => gotoSingleGraou()}>
+                <TouchableOpacity style={styles.flexRow} onPress={() => gotoSingleGraou(tweet.id)}>
                     <Text numberOfLines={1} style={styles.graouName}>{tweet.user.name}</Text>
                     <Text numberOfLines={1} style={styles.graouHandle}>@{tweet.user.username}</Text>
                     <Text>&middot;</Text>
                     <Text numberOfLines={1}
                           style={styles.graouHandle}>{formatDistanceToNowStrict(new Date(tweet.created_at))}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.graouContentContainer} onPress={() => gotoSingleGraou()}>
+                <TouchableOpacity style={styles.graouContentContainer} onPress={() => gotoSingleGraou(tweet.id)}>
                     <Text style={styles.graouContent}>
                         {tweet.body}
                     </Text>
