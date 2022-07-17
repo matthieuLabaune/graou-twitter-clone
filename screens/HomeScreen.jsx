@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Button, Text, View, StyleSheet, FlatList, Image, TouchableOpacity} from 'react-native';
+import {Button, Text, View, StyleSheet, FlatList, Image, TouchableOpacity, ActivityIndicator} from 'react-native';
 import {EvilIcons} from '@expo/vector-icons';
 import {Platform as Plateform} from "react-native-web";
 import {AntDesign} from '@expo/vector-icons';
@@ -8,6 +8,8 @@ import {formatDistanceToNowStrict} from "date-fns";
 
 export default function HomeScreen({navigation}) {
    const[data, setData] = useState([]);
+   const[isLoading, setIsLoading] = useState(true);
+   const[isRefreshing, setIsRefreshing] = useState(false);
 
    useEffect(()=> {
        getAllTweets();
@@ -17,11 +19,20 @@ export default function HomeScreen({navigation}) {
        axios.get('https://graou-backend.eu-1.sharedwithexpose.com/api/tweets')
            .then(response => {
                setData(response.data);
+               setIsLoading(false);
+               setIsRefreshing(false);
            })
            .catch(error => {
                console.log(error)
+               setIsLoading(false);
+               setIsRefreshing(false);
            });
     }
+    function handleRefresh(){
+       setIsRefreshing(true);
+       getAllTweets();
+    }
+
     function gotoProfile() {
         navigation.navigate('Profile Screen')
     }
@@ -74,12 +85,18 @@ export default function HomeScreen({navigation}) {
     )
     return (
         <View style={styles.container}>
+            {isLoading ? (
+            <ActivityIndicator size="large" color="gray" />
+            )  : (
             <FlatList
                 data={data}
                 renderItem={renderItem}
-                keyExtractor={item => item.id}
+                keyExtractor={item => item.id.toString()}
                 ItemSeparatorComponent={() => <View style={styles.graouSeparator}></View>}
+                refreshing={isRefreshing}
+                onRefresh={handleRefresh}
             />
+                )}
             <TouchableOpacity style={styles.floatingButton}
                               onPress={() => gotoNewGraou()}
             >
