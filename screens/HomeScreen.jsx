@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Button, Text, View, StyleSheet, FlatList, Image, TouchableOpacity, ActivityIndicator} from 'react-native';
+import {Text, View, StyleSheet, FlatList, Image, TouchableOpacity, ActivityIndicator} from 'react-native';
 import {EvilIcons} from '@expo/vector-icons';
 import {Platform as Plateform} from "react-native-web";
 import {AntDesign} from '@expo/vector-icons';
@@ -7,42 +7,62 @@ import axios from 'axios';
 import {formatDistanceToNowStrict} from "date-fns";
 
 export default function HomeScreen({navigation}) {
-   const[data, setData] = useState([]);
-   const[isLoading, setIsLoading] = useState(true);
-   const[isRefreshing, setIsRefreshing] = useState(false);
+    const [data, setData] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [page, setPage] = useState(1);
+    const [isAtEndOfScrolling, setIsAtEndOfScrolling] = useState(false);
 
-   useEffect(()=> {
-       getAllTweets();
-   }, [])
+    useEffect(() => {
+        getAllTweets();
+    }, [page])
 
-    function getAllTweets(){
-       axios.get('https://graou-backend.eu-1.sharedwithexpose.com/api/tweets')
-           .then(response => {
-               setData(response.data);
-               setIsLoading(false);
-               setIsRefreshing(false);
-           })
-           .catch(error => {
-               console.log(error)
-               setIsLoading(false);
-               setIsRefreshing(false);
-           });
+    function getAllTweets() {
+        axios.get(`https://graou-backend.eu-1.sharedwithexpose.com/api/tweets?page=${page}`)
+            .then(response => {
+                if (page === 1) {
+                    setData(response.data.data);
+                } else {
+                    setData([...data, ...response.data.data]);
+                }
+
+                if (!response.data.next_page_url) {
+                    setIsAtEndOfScrolling(true);
+                }else {
+                    setIsAtEndOfScrolling(false);
+                }
+
+                setIsLoading(false);
+                setIsRefreshing(false);
+            })
+            .catch(error => {
+                console.log(error)
+                setIsLoading(false);
+                setIsRefreshing(false);
+            });
     }
-    function handleRefresh(){
-       setIsRefreshing(true);
-       getAllTweets();
+
+    function handleRefresh() {
+        setPage(1);
+        setIsAtEndOfScrolling(false)
+        setIsRefreshing(true);
+        getAllTweets();
+    }
+
+    function handleEnd() {
+        setPage(page + 1);
     }
 
     function gotoProfile() {
-        navigation.navigate('Profile Screen')
+        navigation.navigate('Profile Screen');
     }
 
     function gotoSingleGraou() {
-        navigation.navigate('Graou Screen')
+        navigation.navigate('Graou Screen');
     }
 
     function gotoNewGraou() {
-        navigation.navigate('New Graou')
+        navigation.navigate('New Graou');
     }
 
     const renderItem = ({item: tweet}) => (
@@ -55,7 +75,8 @@ export default function HomeScreen({navigation}) {
                     <Text numberOfLines={1} style={styles.graouName}>{tweet.user.name}</Text>
                     <Text numberOfLines={1} style={styles.graouHandle}>@{tweet.user.username}</Text>
                     <Text>&middot;</Text>
-                    <Text numberOfLines={1} style={styles.graouHandle}>{formatDistanceToNowStrict(new Date(tweet.created_at))}</Text>
+                    <Text numberOfLines={1}
+                          style={styles.graouHandle}>{formatDistanceToNowStrict(new Date(tweet.created_at))}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.graouContentContainer} onPress={() => gotoSingleGraou()}>
                     <Text style={styles.graouContent}>
@@ -86,17 +107,20 @@ export default function HomeScreen({navigation}) {
     return (
         <View style={styles.container}>
             {isLoading ? (
-            <ActivityIndicator size="large" color="gray" />
-            )  : (
-            <FlatList
-                data={data}
-                renderItem={renderItem}
-                keyExtractor={item => item.id.toString()}
-                ItemSeparatorComponent={() => <View style={styles.graouSeparator}></View>}
-                refreshing={isRefreshing}
-                onRefresh={handleRefresh}
-            />
-                )}
+                <ActivityIndicator size="large" color="gray"/>
+            ) : (
+                <FlatList
+                    data={data}
+                    renderItem={renderItem}
+                    keyExtractor={item => item.id.toString()}
+                    ItemSeparatorComponent={() => <View style={styles.graouSeparator}></View>}
+                    refreshing={isRefreshing}
+                    onRefresh={handleRefresh}
+                    onEndReached={handleEnd}
+                    onEndReachedThreshold={0.1}
+                    ListFooterComponent={() => !isAtEndOfScrolling && (<ActivityIndicator size="large" color="gray"/>)}
+                />
+            )}
             <TouchableOpacity style={styles.floatingButton}
                               onPress={() => gotoNewGraou()}
             >
