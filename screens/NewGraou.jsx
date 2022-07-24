@@ -1,26 +1,54 @@
 import React, {useState} from 'react';
-import {Image, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {ActivityIndicator, Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import axiosConfig from "../helpers/axiosConfig"
 
 export default function NewGraou({navigation}) {
 
     const [graou, setGraou] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
-    function sendGraou(){
-        navigation.navigate('Tab')
+    function sendGraou() {
+        if (graou.length === 0) {
+            Alert.alert('Veuillez entrer au moins UN charactère !')
+            return;
+        }
+        setIsLoading(true);
+        axiosConfig.post(`/tweets/`, {
+            body: graou
+        })
+            .then(response => {
+                navigation.navigate('Home1', {
+                    newTeetAdded: response.data
+                });
+                setIsLoading(false);
+            })
+            .catch(error => {
+                console.log(error)
+                setIsLoading(false);
+            });
     }
+
     return (
         <View style={styles.container}>
             <View style={styles.graouButtonContainer}>
                 <Text style={graou.length > 250 ? styles.textRed : styles.textGray}>
                     Characters left: {280 - graou.length}
                 </Text>
-                <TouchableOpacity style={styles.graouButton} onPress={() => sendGraou()}>
-                    <Text style={styles.graouButtonText}>GRrawwwW </Text>
-                </TouchableOpacity>
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                    {isLoading && (
+                        <ActivityIndicator size="small" color="gray" style={{marginRight: 8}}/>
+                    )}
+                    <TouchableOpacity style={styles.graouButton} onPress={() => sendGraou()}
+                                      disabled={isLoading}
+                    >
+                        <Text style={styles.graouButtonText}>GRrawwwW </Text>
+                    </TouchableOpacity>
+                </View>
             </View>
             <View style={styles.graouBoxContainer}>
                 <Image style={styles.avatar} source={{uri: 'https://reactnative.dev/img/tiny_logo.png'}}></Image>
-                <TextInput style={styles.input} onChangeText={setGraou} value={graou} placeholder="What's happening?" placeholderTextColor="gray" multiline maxLength={280}/>
+                <TextInput style={styles.input} onChangeText={setGraou} value={graou} placeholder="What's happening?"
+                           placeholderTextColor="gray" multiline maxLength={280}/>
             </View>
         </View>
     );
@@ -30,7 +58,7 @@ const styles = StyleSheet.create({
     textGray: {
         color: 'gray',
     },
-    textRed : {
+    textRed: {
         color: 'red'
     },
     ml4: {

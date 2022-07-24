@@ -13,7 +13,6 @@ export default function TweetScreen({route, navigation}) {
         getTweet();
     }, [])
 
-
     function getTweet() {
         axiosConfig.get(`/tweets/${route.params.tweetId}`)
             .then(response => {

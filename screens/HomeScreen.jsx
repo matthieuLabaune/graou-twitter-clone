@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {Text, View, StyleSheet, FlatList, Image, TouchableOpacity, ActivityIndicator} from 'react-native';
 import {EvilIcons} from '@expo/vector-icons';
 import {Platform as Plateform} from "react-native-web";
@@ -6,16 +6,41 @@ import {AntDesign} from '@expo/vector-icons';
 import axiosConfig from "../helpers/axiosConfig"
 import {formatDistanceToNowStrict} from "date-fns";
 
-export default function HomeScreen({navigation}) {
+export default function HomeScreen({route, navigation}) {
     const [data, setData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [page, setPage] = useState(1);
     const [isAtEndOfScrolling, setIsAtEndOfScrolling] = useState(false);
+    const flatListRef = useRef();
 
     useEffect(() => {
         getAllTweets();
-    }, [page])
+    }, [page]);
+
+    useEffect(() => {
+        if (route.params?.newTeetAdded) {
+            getAllTweetsRefresh();
+            flatListRef.current.scrollToOffset({ offest: 0})
+        }
+    }, [route.params?.newTeetAdded]);
+
+    function getAllTweetsRefresh() {
+        setPage(1);
+        setIsAtEndOfScrolling(false);
+        setIsRefreshing(false);
+        axiosConfig.get(`/tweets`)
+            .then(response => {
+                setData(response.data.data);
+                setIsLoading(false);
+                setIsRefreshing(false);
+            })
+            .catch(error => {
+                console.log(error)
+                setIsLoading(false);
+                setIsRefreshing(false);
+            });
+    };
 
     function getAllTweets() {
         axiosConfig.get(`/tweets?page=${page}`)
@@ -112,6 +137,7 @@ export default function HomeScreen({navigation}) {
                 <ActivityIndicator size="large" color="gray"/>
             ) : (
                 <FlatList
+                    ref={flatListRef}
                     data={data}
                     renderItem={renderItem}
                     keyExtractor={item => item.id.toString()}
