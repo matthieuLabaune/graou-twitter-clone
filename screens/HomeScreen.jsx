@@ -78,8 +78,10 @@ export default function HomeScreen({route, navigation}) {
         setPage(page + 1);
     }
 
-    function gotoProfile() {
-        navigation.navigate('Profile Screen');
+    function gotoProfile(userId) {
+        navigation.navigate('Profile Screen', {
+            userId: userId,
+        });
     }
 
     function gotoSingleGraou(tweetId) {
@@ -94,7 +96,7 @@ export default function HomeScreen({route, navigation}) {
 
     const renderItem = ({item: tweet}) => (
         <View style={styles.graouContainer}>
-            <TouchableOpacity onPress={() => gotoProfile()}>
+            <TouchableOpacity onPress={() => gotoProfile(tweet.user.id)}>
                 <Image style={styles.avatar} source={{uri: tweet.user.avatar}}></Image>
             </TouchableOpacity>
             <View style={{flex: 1}}>
