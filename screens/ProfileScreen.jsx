@@ -11,7 +11,7 @@ import {EvilIcons} from '@expo/vector-icons';
 import {useEffect, useState} from "react";
 import axiosConfig from "../helpers/axiosConfig";
 import {format} from "date-fns";
-import RenderItem from "./components/RenderItem";
+import RenderItem from "../components/RenderItem";
 
 export default function ProfileScreen({route, navigation}) {
     const [user, setUser] = useState(null);

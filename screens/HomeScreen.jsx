@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import {View, StyleSheet, FlatList, Image, TouchableOpacity, ActivityIndicator} from 'react-native';
 import {AntDesign} from '@expo/vector-icons';
 import axiosConfig from "../helpers/axiosConfig"
-import RenderItem from "./components/RenderItem";
+import RenderItem from "../components/RenderItem";
 
 export default function HomeScreen({route, navigation}) {
     const [data, setData] = useState([]);
