@@ -16,6 +16,7 @@ import {AuthContext, AuthProvider} from "./context/AuthProvider";
 import {useContext, useEffect, useState} from "react";
 import LoginScreen from "./screens/Auth/LoginScreen"
 import RegisterScreen from "./screens/Auth/RegisterScreen";
+import * as SecureStore from 'expo-secure-store';
 
 const Stack = createStackNavigator()
 const Drawer = createDrawerNavigator();
@@ -81,6 +82,17 @@ export default function App() {
     useEffect(() => {
         // check if user is logged in or not.
         // Check SecureStore for the user object/token
+        SecureStore.getItemAsync('user')
+            .then(userString => {
+                if(userString) {
+                    setUser(JSON.parse(userString))
+                }
+                setIsLoading(false)
+            }).catch(
+              error => {
+                  console.log(error)
+              }
+        )
         setTimeout(() => {
             setIsLoading(false)
         }, 2000);
