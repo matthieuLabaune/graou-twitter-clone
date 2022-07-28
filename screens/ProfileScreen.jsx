@@ -5,13 +5,14 @@ import {
     Image,
     TouchableOpacity,
     Linking,
-    FlatList, ActivityIndicator,
+    FlatList, ActivityIndicator, Alert,
 } from 'react-native';
 import {EvilIcons} from '@expo/vector-icons';
-import {useEffect, useState} from "react";
+import {useContext, useEffect, useState} from "react";
 import axiosConfig from "../helpers/axiosConfig";
 import {format} from "date-fns";
 import RenderItem from "../components/RenderItem";
+import {AuthContext} from "../context/AuthProvider";
 
 export default function ProfileScreen({route, navigation}) {
     const [user, setUser] = useState(null);
@@ -21,11 +22,63 @@ export default function ProfileScreen({route, navigation}) {
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [page, setPage] = useState(1);
     const [isAtEndOfScrolling, setIsAtEndOfScrolling] = useState(false);
+    const [isFollowing, setIsFollowing] = useState(false);
+    const {user: userFromContext} = useContext(AuthContext);
+
 
     useEffect(() => {
         getUserProfile();
         getUserTweets();
     }, [page]);
+
+    useEffect(() => {
+        getIsFollowing();
+    }, []);
+
+    function getIsFollowing() {
+        axiosConfig.defaults.headers.common[
+            'Authorization'
+            ] = `Bearer ${userFromContext.token}`;
+
+        axiosConfig.get(`/is_following/${route.params.userId}`)
+            .then(response => {
+                setIsFollowing(response.data);
+            })
+            .catch(error => {
+                console.log(error)
+            });
+    }
+
+    function unfollowUser() {
+        axiosConfig.defaults.headers.common[
+            'Authorization'
+            ] = `Bearer ${userFromContext.token}`;
+
+        axiosConfig.post(`/unfollow/${route.params.userId}`)
+            .then(response => {
+                setIsFollowing(false);
+                Alert.alert('You are now unfollowing this user.')
+            })
+            .catch(error => {
+                console.log(error)
+            });
+    }
+
+    function followUser() {
+        axiosConfig.defaults.headers.common[
+            'Authorization'
+            ] = `Bearer ${userFromContext.token}`;
+
+        axiosConfig.post(`/follow/${route.params.userId}`)
+            .then(response => {
+                setIsFollowing(true);
+                Alert.alert('You are now following this user.')
+            })
+            .catch(error => {
+                console.log(error)
+            });
+    }
+
 
     function getUserTweets() {
         axiosConfig.get(`/users/${route.params.userId}/tweets/?page=${page}`)
@@ -63,7 +116,6 @@ export default function ProfileScreen({route, navigation}) {
                 console.log(error)
                 setIsLoading(false);
             });
-
     }
 
     function handleRefresh() {
@@ -96,9 +148,21 @@ export default function ProfileScreen({route, navigation}) {
                                 uri: user.avatar,
                             }}
                         />
-                        <TouchableOpacity style={styles.followButton}>
-                            <Text style={styles.followButtonText}>Follow</Text>
-                        </TouchableOpacity>
+                        { userFromContext.id !== route.params.userId &&
+                        <View>
+                            {isFollowing ? (
+                                <TouchableOpacity style={styles.followButton}
+                                                  onPress={() => unfollowUser(route.params.userId)}>
+                                    <Text style={styles.followButtonText}>Unfollow</Text>
+                                </TouchableOpacity>
+                            ) : (
+                                <TouchableOpacity style={styles.followButton}
+                                                  onPress={() => followUser(route.params.userId)}>
+                                    <Text style={styles.followButtonText}>Follow</Text>
+                                </TouchableOpacity>
+                            )}
+                        </View>
+                        }
                     </View>
 
                     <View style={styles.nameContainer}>
