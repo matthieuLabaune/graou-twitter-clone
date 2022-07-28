@@ -1,11 +1,13 @@
-import React, {useState} from 'react';
+import React, {useContext, useState} from 'react';
 import {ActivityIndicator, Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import axiosConfig from "../helpers/axiosConfig"
+import {AuthContext} from "../context/AuthProvider";
 
 export default function NewGraou({navigation}) {
 
     const [graou, setGraou] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const { user } = useContext(AuthContext);
 
     function sendGraou() {
         if (graou.length === 0) {
@@ -13,6 +15,11 @@ export default function NewGraou({navigation}) {
             return;
         }
         setIsLoading(true);
+
+        axiosConfig.defaults.headers.common[
+            'Authorization'
+            ] = `Bearer ${user.token}`;
+
         axiosConfig.post(`/tweets/`, {
             body: graou
         })

@@ -1,8 +1,9 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import {View, StyleSheet, FlatList, Image, TouchableOpacity, ActivityIndicator} from 'react-native';
 import {AntDesign} from '@expo/vector-icons';
 import axiosConfig from "../helpers/axiosConfig"
 import RenderItem from "../components/RenderItem";
+import {AuthContext} from "../context/AuthProvider";
 
 export default function HomeScreen({route, navigation}) {
     const [data, setData] = useState([]);
@@ -11,6 +12,8 @@ export default function HomeScreen({route, navigation}) {
     const [page, setPage] = useState(1);
     const [isAtEndOfScrolling, setIsAtEndOfScrolling] = useState(false);
     const flatListRef = useRef();
+    const { user } = useContext(AuthContext);
+
 
     useEffect(() => {
         getAllTweets();
@@ -27,6 +30,11 @@ export default function HomeScreen({route, navigation}) {
         setPage(1);
         setIsAtEndOfScrolling(false);
         setIsRefreshing(false);
+
+        axiosConfig.defaults.headers.common[
+            'Authorization'
+            ] = `Bearer ${user.token}`;
+
         axiosConfig.get(`/tweets`)
             .then(response => {
                 setData(response.data.data);
@@ -41,6 +49,11 @@ export default function HomeScreen({route, navigation}) {
     };
 
     function getAllTweets() {
+
+        axiosConfig.defaults.headers.common[
+            'Authorization'
+            ] = `Bearer ${user.token}`;
+
         axiosConfig.get(`/tweets?page=${page}`)
             .then(response => {
                 if (page === 1) {
