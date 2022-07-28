@@ -9,15 +9,19 @@ export default function LoginScreen({navigation}) {
 
     return (
         <View style={styles.container}>
-            <View style={{ marginTop: 130, width: 260 }}>
-                <View style={{ alignItems: 'center' }}>
+            <View style={{marginTop: 130, width: 260}}>
+                <View style={{alignItems: 'center'}}>
                     <Image
                         style={styles.logo}
                         source={require('../../assets/larydefault.png')}
                     ></Image>
                 </View>
-                <View style={{ marginTop: 40 }}>
-                    {error && <Text style={{ color: 'red' }}>{error}</Text>}
+                <View style={{marginTop: 40}}>
+                    {error &&
+                        <View style={styles.errorContainer}>
+                            <Text style={styles.errorTextColor}>{error}</Text>
+                        </View>
+                    }
                     <TextInput
                         style={[styles.inputBox, styles.mt4]}
                         onChangeText={setEmail}
@@ -44,7 +48,7 @@ export default function LoginScreen({navigation}) {
                 >
                     {isLoading && (
                         <ActivityIndicator
-                            style={{ marginRight: 18 }}
+                            style={{marginRight: 18}}
                             size="small"
                             color="white"
                         />
@@ -74,8 +78,17 @@ export default function LoginScreen({navigation}) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#1d9bf1',
+        backgroundColor: '#C7D2FE',
         alignItems: 'center'
+    },
+    errorContainer: {
+        backgroundColor: '#FECACA',
+        alignItems: 'center',
+        padding: 5,
+        borderRadius: 5,
+    },
+    errorTextColor: {
+      color: '#7F1D1D'
     },
     logo: {
         width: 100,
@@ -96,7 +109,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#0084b3',
+        backgroundColor: '#4338CA',
         padding: 12,
         borderRadius: 5,
     },

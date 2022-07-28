@@ -9,6 +9,7 @@ import {
     Alert,
     Image,
 } from 'react-native';
+import axiosConfig from "../../helpers/axiosConfig";
 
 export default function RegisterScreen({navigation}) {
     const [name, setName] = useState('');
@@ -20,25 +21,42 @@ export default function RegisterScreen({navigation}) {
     const [error, setError] = useState(null);
 
     function register(email, username, password, confirmPassword) {
-        Alert.alert('Register Logic here');
+        setIsLoading(true);
+        axiosConfig.post('/register', {
+            name, email, username, password, password_confirmation: confirmPassword
+        })
+            .then(response => {
+                Alert.alert('Utilisateur(rice) créé(e) ! Merci de vous authentifier.');
+                navigation.navigate('Login Screen');
+                setIsLoading(false);
+                setError(null)
+            })
+            .catch(error => {
+                console.log(error);
+                setIsLoading(false);
+            })
     }
 
     return (
         <View style={styles.container}>
-            <View style={{ marginTop: 130, width: 260 }}>
-                <View style={{ alignItems: 'center' }}>
+            <View style={{marginTop: 130, width: 260}}>
+                <View style={{alignItems: 'center'}}>
                     <Image
                         style={styles.logo}
                         source={require('../../assets/larydefault.png')}
                     />
                 </View>
-                <View style={{ marginTop: 40 }}>
-                    {error && <Text style={{ color: 'red' }}>{error}</Text>}
+                <View style={{marginTop: 40}}>
+                    {error &&
+                        <View style={styles.errorContainer}>
+                            <Text style={styles.errorTextColor}>{error}</Text>
+                        </View>
+                    }
                     <TextInput
                         style={[styles.inputBox, styles.mt4]}
                         onChangeText={setName}
                         value={name}
-                        placeholder="Name"
+                        placeholder="Nom"
                         placeholderTextColor="gray"
                     />
                     <TextInput
@@ -55,7 +73,7 @@ export default function RegisterScreen({navigation}) {
                         style={[styles.inputBox, styles.mt4]}
                         onChangeText={setUsername}
                         value={username}
-                        placeholder="Username"
+                        placeholder="Pseudo"
                         placeholderTextColor="gray"
                         autoCapitalize="none"
                     />
@@ -63,7 +81,7 @@ export default function RegisterScreen({navigation}) {
                         style={[styles.inputBox, styles.mt4]}
                         onChangeText={setPassword}
                         value={password}
-                        placeholder="Password"
+                        placeholder="Mot de passe"
                         placeholderTextColor="gray"
                         autoCapitalize="none"
                         secureTextEntry={true}
@@ -72,7 +90,7 @@ export default function RegisterScreen({navigation}) {
                         style={[styles.inputBox, styles.mt4]}
                         onChangeText={setConfirmPassword}
                         value={confirmPassword}
-                        placeholder="Confirm Password"
+                        placeholder="Confirmation du mot de passe"
                         placeholderTextColor="gray"
                         autoCapitalize="none"
                         secureTextEntry={true}
@@ -87,10 +105,10 @@ export default function RegisterScreen({navigation}) {
                         <ActivityIndicator
                             size="small"
                             color="white"
-                            style={{ marginRight: 18 }}
+                            style={{marginRight: 18}}
                         />
                     )}
-                    <Text style={styles.loginButtonText}>Register</Text>
+                    <Text style={styles.loginButtonText}>S'enregistrer</Text>
                 </TouchableOpacity>
                 <View
                     style={{
@@ -99,9 +117,9 @@ export default function RegisterScreen({navigation}) {
                         marginTop: 12,
                     }}
                 >
-                    <Text style={[styles.registerText]}>Already have an account?</Text>
+                    <Text style={[styles.registerText]}>Vous avez déjà un compte?</Text>
                     <TouchableOpacity onPress={() => navigation.navigate('Login Screen')}>
-                        <Text style={styles.registerTextLink}> Login</Text>
+                        <Text style={styles.registerTextLink}> Se connecter</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -112,8 +130,17 @@ export default function RegisterScreen({navigation}) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#1d9bf1',
+        backgroundColor: '#C7D2FE',
         alignItems: 'center',
+    },
+    errorContainer: {
+        backgroundColor: '#FECACA',
+        alignItems: 'center',
+        padding: 5,
+        borderRadius: 5,
+    },
+    errorTextColor: {
+        color: '#7F1D1D'
     },
     logo: {
         width: 100,
@@ -128,7 +155,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#0084b3',
+        backgroundColor: '#4338CA',
         padding: 12,
         borderRadius: 5,
     },
